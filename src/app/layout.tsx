@@ -3,6 +3,7 @@ import './globals.css';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { AppHeader } from '@/components/layout/header';
 import { Toaster } from "@/components/ui/toaster"
+import { AppFooter } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
   title: 'CoinSnap - Crypto Tracking & Predictions',
@@ -32,6 +33,7 @@ export default function RootLayout({
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/40">
               {children}
             </main>
+            <AppFooter />
           </div>
         </div>
         <Toaster />
