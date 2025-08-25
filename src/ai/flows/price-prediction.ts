@@ -1,6 +1,6 @@
 // Price Prediction Genkit flow.
 
-'use server';
+"use server";
 
 /**
  * @fileOverview Provides AI-powered price predictions for cryptocurrencies.
@@ -10,39 +10,49 @@
  * - PricePredictionOutput - The return type for the predictPrice function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import { getCryptoPriceHistory } from '@/app/api/services/crypto-price-service';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
+import { getCryptoPriceHistory } from "@/app/api/services/crypto-price-service";
 
 const PricePredictionInputSchema = z.object({
   ticker: z
     .string()
-    .describe('The ticker symbol of the cryptocurrency (e.g., BTC, ETH).'),
+    .describe("The ticker symbol of the cryptocurrency (e.g., BTC, ETH)."),
 });
 export type PricePredictionInput = z.infer<typeof PricePredictionInputSchema>;
 
 const PricePredictionOutputSchema = z.object({
-  high: z.number().describe('The predicted high price for the next 24-48 hours.'),
-  low: z.number().describe('The predicted low price for the next 24-48 hours.'),
-  average: z.number().describe('The predicted average price for the next 24-48 hours.'),
+  high: z
+    .number()
+    .describe("The predicted high price for the next 24-48 hours."),
+  low: z.number().describe("The predicted low price for the next 24-48 hours."),
+  average: z
+    .number()
+    .describe("The predicted average price for the next 24-48 hours."),
   confidenceScore: z
     .number()
     .describe(
-      'A score between 0 and 1 representing the confidence in the prediction.'
+      "A score between 0 and 1 representing the confidence in the prediction."
     ),
 });
 export type PricePredictionOutput = z.infer<typeof PricePredictionOutputSchema>;
 
-export async function predictPrice(input: PricePredictionInput): Promise<PricePredictionOutput> {
+export async function predictPrice(
+  input: PricePredictionInput
+): Promise<PricePredictionOutput> {
   return pricePredictionFlow(input);
 }
 
+const PricePredictionPromptInputSchema = PricePredictionInputSchema.extend({
+  priceHistory: z.string().describe("The price history of the cryptocurrency."),
+});
+
 const prompt = ai.definePrompt({
-  name: 'pricePredictionPrompt',
+  name: "pricePredictionPrompt",
   input: {
-    schema: PricePredictionInputSchema,
+    schema: PricePredictionPromptInputSchema,
   },
-  output: {schema: PricePredictionOutputSchema},
+  output: { schema: PricePredictionOutputSchema },
   prompt: `You are an AI-powered cryptocurrency price prediction expert.
 
   Given the current market data for {{ticker}}, provide a price prediction for the next 24-48 hours.
@@ -56,15 +66,15 @@ const prompt = ai.definePrompt({
   `,
 });
 
-const pricePredictionFlow = ai.defineFlow(
+export const pricePredictionFlow = ai.defineFlow(
   {
-    name: 'pricePredictionFlow',
+    name: "pricePredictionFlow",
     inputSchema: PricePredictionInputSchema,
     outputSchema: PricePredictionOutputSchema,
   },
-  async input => {
-    const priceHistory = await getCryptoPriceHistory(input.ticker, '7d');
-    const {output} = await prompt({
+  async (input) => {
+    const priceHistory = await getCryptoPriceHistory(input.ticker, "7d");
+    const { output } = await prompt({
       ...input,
       priceHistory,
     });
